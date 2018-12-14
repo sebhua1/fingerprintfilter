@@ -13,13 +13,8 @@ import java.util.List;
 
 public class FileReader {
 
-
-
     public static String readFile(String path) throws IOException {
-        File file= new File(path);
-        return FileUtils.readFileToString(file);
-
-
+        return FileUtils.readFileToString(new File(path));
     }
 
 
