@@ -36,7 +36,7 @@ public class Main {
 
 
             try {
-               ProcessBuilder pb = new ProcessBuilder("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/sherlock","./sherlock");
+               ProcessBuilder pb = new ProcessBuilder("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/sherlock","-o");
                String string =  new CommandExecutor(pb).exec();
                //System.out.println("Der String is leer " + string);
             } catch (Exception e) {
