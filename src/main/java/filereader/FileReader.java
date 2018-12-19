@@ -9,7 +9,17 @@ import java.util.List;
 
     /*
     Reads a text file as String
-    */
+
+
+public class FileReader {
+
+    public static String readFile(String path) throws IOException {
+        return FileUtils.readFileToString(new File(path));
+    }
+
+
+}
+*/
 
 public class FileReader {
 
