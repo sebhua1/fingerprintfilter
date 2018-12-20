@@ -36,8 +36,8 @@ public class Main {
 
                 Filter.displayTokenUsingStopAnalyzer(shrinks, susp);
                 FileUtils.touch(new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/Filtered/result.txt"));
- /*               String filterpath = new File ("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/Filtered/result.txt").getPath();
-                Files.write(filterpath,shrinks,Charset.defaultCharset());
+ /*          //String filterpath = new File ("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/Filtered/result.txt").getPath();
+              //Files.write(filterpath,shrinks,Charset.defaultCharset());
 
             //loop to scan all files from directory and filter them
             //To-Dos:   1) Write filtered strings into new file
@@ -55,8 +55,8 @@ public class Main {
                 shrinks.add(Filter.Shrink.stemming); // stemming
 
 
-                Filter.displayTokenUsingStopAnalyzer(shrinks, susps);
-
+                String newtext = Filter.displayTokenUsingStopAnalyzer(shrinks, susps);
+                File newFile = new File
                 //create new file in given directory with x in filename, where x counts up
                 FileUtils.touch(new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/Filtered/" +x+ ".txt"));
                 x++;
@@ -64,7 +64,7 @@ public class Main {
 
                 //Tests "for" loop
                 //System.out.print("Directory" + file.getPath());
-
+                FileUtils.writeStringToFile(new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/Filtered/" +x+ ".txt"));
 
 
             }
@@ -78,8 +78,9 @@ public class Main {
             String fileName = "/Users/sebastianhuang/IdeaProjects/fingerprintfilter/PAN/susp/suspicious-document00001.txt";
 
             File f = new File(fileName);
-            long fileSize = susp.length(); //5684 bytes zu 5683 bytes????
+            long fileSize = susp.length(); //f 5684 bytes zu susp 5683 bytes????
             System.out.format("The size of the file: %d bytes\n", fileSize);
+            System.out.format("%d",f.length());
 
             //Integrate Sherlock: Take all prefiltered files and compare them
             try {
@@ -89,12 +90,12 @@ public class Main {
                       "/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/src/source-document00001.txt");
                String string =  new CommandExecutor(pb).exec();
                System.out.println("Der String is leer " + string);*/
-                String sourceFilePath = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/susp/suspicious-document00001.txt").getAbsolutePath();
+                String sourceFilePath = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/susp/suspicious-document00006.txt").getAbsolutePath();
                 String candidateFilePath = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/src/source-document00001.txt").getAbsolutePath();
-                System.out.println("Hallo");
+                //System.out.println("Hallo");
                 String output = new CommandExecutor("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/sherlock",
                         "-t",
-                        "0","-o",
+                        "0",
                         sourceFilePath,
                         candidateFilePath
                 ).exec();

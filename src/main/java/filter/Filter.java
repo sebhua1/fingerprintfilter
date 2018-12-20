@@ -27,7 +27,7 @@ public class Filter {
         stopwords
     }
 
-    public static void displayTokenUsingStopAnalyzer(List<Shrink> shrink, String text) throws IOException {
+    public static String displayTokenUsingStopAnalyzer(List<Shrink> shrink, String text) throws IOException {
         for (Shrink item : shrink) {
             TokenStream tokenStream = new SimpleAnalyzer().tokenStream(null, new StringReader(text));
             switch (item) {
@@ -43,7 +43,7 @@ public class Filter {
             }
             text = filterText(tokenStream);
         }
-
+        return text;
 
     }
 

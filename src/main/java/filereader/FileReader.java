@@ -2,8 +2,10 @@ package filereader;
 
 import org.apache.commons.io.FileUtils;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -24,7 +26,7 @@ public class FileReader {
 public class FileReader {
 
     public static String readFile(String path) throws IOException {
-        return FileUtils.readFileToString(new File(path));
+        return FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8);
     }
 
 
