@@ -7,8 +7,6 @@ import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
@@ -54,7 +52,6 @@ public class Filter {
             tokenStream.reset(); // Resets tokenstream to beginning
             while (tokenStream.incrementToken()) { //loop for each filtered word
                 newText += charTerm.toString() + " ";
-                System.out.println(charTerm.toString()); //displays every word after filtering
             }
             tokenStream.end();   // Perform end-of-stream operations, set final offset.
         } finally {
