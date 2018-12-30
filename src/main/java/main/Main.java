@@ -97,7 +97,7 @@ public class Main {
         return newFile;
     }
 
-    //Method for executing Sherlock 
+    //Method for executing Sherlock
     @SuppressWarnings({"finally", "ReturnInsideFinallyBlock"})
     private static String checkPlagiarismn(File file, final File suspFile){
         String output = "";
