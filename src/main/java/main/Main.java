@@ -8,10 +8,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class Main {
 
@@ -29,13 +31,16 @@ public class Main {
                     8) Read results
                     9) File sizes
                     10)Timestamps
+                    11)Memory usage
+
+                    Count number of results - check
+                    Compare results.txt and output a final results with results in common, missed and to much
             */
             /*
                 scan all source documents from directory, filters them and creates new files with filtered texts in new directory
                 Sums up filesizes before and after filtering
             */
-            long startTimeMain = System.currentTimeMillis();
-            long startTimeSrcFilter = System.currentTimeMillis();
+            long startTimeMainScrFilterNoCompare = System.currentTimeMillis();
             File srcDir = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/PAN/src/");
             Iterator<File> srcIterator = FileUtils.iterateFiles(srcDir, null, false);
 
@@ -48,8 +53,7 @@ public class Main {
                 File shrinkedSrcFile = writeFileInDirectory("src", srcFile);
                 shrinkedFileSize += shrinkedSrcFile.length();
             }
-            long endTimeSrcFilter   = System.currentTimeMillis();
-            long runtimeSrcFilter = endTimeSrcFilter - startTimeSrcFilter;
+            long runtimeSrcFilter = takeTime(startTimeMainScrFilterNoCompare);
             System.out.print("Source files filtered\n");
 
 
@@ -57,6 +61,7 @@ public class Main {
             long startTimeSuspFilter = System.currentTimeMillis();
             File suspDir = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/PAN/susp/");
             Iterator<File> suspIterator = FileUtils.iterateFiles(suspDir, null, false);
+
             while(suspIterator.hasNext()){
                 File suspFile = suspIterator.next();
                 fileSize += suspFile.length();
@@ -64,25 +69,20 @@ public class Main {
                 shrinkedFileSize += shrinkedSrcFile.length();
             }
 
-            long endTimeSuspFilter   = System.currentTimeMillis();
-            long runtimeSuspFilter = endTimeSuspFilter - startTimeSuspFilter;
-            System.out.print("Suspiscious files filtered\n");
-
-
-            // Displays filesizes before and after filtering
-            System.out.format("The size of the original files: %d MB\n", fileSize / (1024 * 1024));
-            System.out.format("The size of the shrinked files: %d MB\n", shrinkedFileSize / (1024 * 1024));
+            long runtimeSuspFilter = takeTime(startTimeSuspFilter);
+            System.out.println("Suspicious files filtered");
+            System.out.println("File sizes calculated");
 
             //Runs Sherlock for plagiarism detection
             long startTimePlagiarismCheck = System.currentTimeMillis();
-            String result = checkPlagiarismn(new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/filtered-src/"), new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/filtered-susp/"));
-            long endTimePlagiarismCheck   = System.currentTimeMillis();
-            long runtimeTimePlagiarismCheck = endTimePlagiarismCheck - startTimePlagiarismCheck;
+            String result = checkPlagiarism(new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/filtered-src/"), new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/filtered-susp/"));
+            long runtimePlagiarismCheck = takeTime(startTimePlagiarismCheck);
             System.out.print("Checked for plagiarism\n");
 
             //Deletes results where files from the same directory are compared to eachother
             StringBuilder filteredResult = new StringBuilder();
             Scanner scanner = new Scanner(result);
+            int resultsCounter = 0;
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split(";");
@@ -91,6 +91,7 @@ public class Main {
                 if (partpath1.getParent().hashCode()!=partpath2.getParent().hashCode()){
 
                     filteredResult.append(partpath1.getName()).append(" - ").append(partpath2.getName()).append(" : ").append(parts[2]).append("\n");
+                    resultsCounter++;
                 }
             }
             scanner.close();
@@ -98,22 +99,83 @@ public class Main {
             //Creates cleaned resultsfile
             File endResult = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/result.txt");
             FileUtils.writeStringToFile(endResult, filteredResult.toString(), StandardCharsets.UTF_8);
-
-            long endTimeMain   = System.currentTimeMillis();
-            long runtimeMain = endTimeMain - startTimeMain;
+            long runtimeNoCompare = takeTime(startTimeMainScrFilterNoCompare);
             System.out.print("Created results file\n");
 
-            //Creates a file with runtimes and filesizes
+            //Filtered results to a list without threshold
+            long startTimeResultCompare = System.currentTimeMillis();
+            String resultsCheck = FileReader.readFile(endResult.getPath());
+            StringBuilder resultsCompare = new StringBuilder();
+            Scanner resultsScanner = new Scanner(resultsCheck);
+            while (resultsScanner.hasNextLine()) {
+                String resultsLine = resultsScanner.nextLine();
+                String[] resultsParts = resultsLine.split(":");
+                File resultsPart = new File(resultsParts[0]);
+
+                resultsCompare.append(resultsPart).append("\n");
+            }
+            //writes filtered results without threshold to a new txt file
+            File resultsNoValue = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/resultsNoValue.txt");
+            FileUtils.writeStringToFile(resultsNoValue, resultsCompare.toString(), StandardCharsets.UTF_8);
+
+            //Unfiltered results to list
+            String unfilteredResultsCheck = FileReader.readFile("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/resultNoFilter.txt");
+            StringBuilder unfilteredResultsCompare = new StringBuilder();
+            Scanner unfilteredResultsScanner = new Scanner(unfilteredResultsCheck);
+            while (unfilteredResultsScanner.hasNextLine()) {
+                String unfilteredResultsLine = unfilteredResultsScanner.nextLine();
+                String[] unfilteredResultsParts = unfilteredResultsLine.split(":");
+                File unfilteredResultsPart = new File(unfilteredResultsParts[0]);
+
+                unfilteredResultsCompare.append(unfilteredResultsPart).append("\n");
+            }
+
+            //writes unfiltered results without threshold to a new txt file
+            File unfilteredResultsNoValue = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/ufresultsNoValue.txt");
+            FileUtils.writeStringToFile(unfilteredResultsNoValue, unfilteredResultsCompare.toString(), StandardCharsets.UTF_8);
+
+            //Precision/recall: Filtered results minus unfiltered results, unfiltered results minus filtered results
+            // and results in common
+            final Path firstFile = Paths.get("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/resultsNoValue.txt");
+            final Path secondFile = Paths.get("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/ufresultsNoValue.txt");
+            final List<String> firstFileContent = Files.readAllLines(firstFile,
+                    Charset.defaultCharset());
+            final List<String> secondFileContent = Files.readAllLines(secondFile,
+                    Charset.defaultCharset());
+
+            int diffCounter1 = diffFiles(firstFileContent, secondFileContent, 1, 0);
+            int diffCounter2 = diffFiles(secondFileContent, firstFileContent, 2, 0);
+            int commCounter = commonFiles(firstFileContent, secondFileContent);
+
+            long runtimeResultsCompare = takeTime(startTimeResultCompare);
+
+            System.out.print("Completed comparisom with unfiltered results\n");
+
+            //Memory usage
+            Runtime runtime = Runtime.getRuntime();
+            runtime.gc();
+            long runtimeMain = takeTime(startTimeMainScrFilterNoCompare);
+            long memory = runtime.totalMemory() - runtime.freeMemory();
+
+            //Creates a file with runtimes, filesizes and number of results
             BufferedWriter relevantWriter = new BufferedWriter(new FileWriter
-                    ("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/timestamps.txt"));
+                    ("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/log.txt"));
             relevantWriter.write("Filtered source files in: " + runtimeSrcFilter + "ms\n");
-            relevantWriter.write("Filtered source files in: " + runtimeSuspFilter + "ms\n");
-            relevantWriter.write("Checked for plagiarism in: " + runtimeTimePlagiarismCheck + "ms\n");
+            relevantWriter.write("Filtered suspicious files in: " + runtimeSuspFilter + "ms\n");
+            relevantWriter.write("Checked for plagiarism in: " + runtimePlagiarismCheck + "ms\n");
+            relevantWriter.write("Total runtime without comparing: " + runtimeNoCompare + "ms\n");
+            relevantWriter.write("Compared filtered and unfiltered results in: " + runtimeResultsCompare + "ms\n");
             relevantWriter.write("Total runtime: " + runtimeMain + "ms\n");
             relevantWriter.newLine();
-            relevantWriter.write("Original file size: " + fileSize/(1024 * 1024)+"MB\n");
-            relevantWriter.write("File size after filtering: " + shrinkedFileSize/(1024 * 1024)+ "MB\n");
+            relevantWriter.write("Original file size: " + fileSize+ "bytes\n");
+            relevantWriter.write("File size after filtering: " + shrinkedFileSize+ "bytes\n");
+            relevantWriter.write ("Number of results: " +resultsCounter+ "\n");
+            relevantWriter.write ("Number of different results (filtered - unfiltered): " + diffCounter1 + "\n");
+            relevantWriter.write ("Number of different results (unfiltered - filtered): "+ diffCounter2 + "\n");
+            relevantWriter.write("Number of common files: " + commCounter + "\n");
+            relevantWriter.write("Memory used: " + memory + "bytes\n");
             relevantWriter.close();
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,9 +186,9 @@ public class Main {
     private static File writeFileInDirectory (String dir, File currentFile) throws  IOException{
         String susps = FileReader.readFile(currentFile.getPath());
         ArrayList<Filter.Shrink> shrinks = new ArrayList<>(); //file as Arraylist
-        shrinks.add(Filter.Shrink.stopwords); //stopwords
         shrinks.add(Filter.Shrink.folding); //folding
-        shrinks.add(Filter.Shrink.stemming); // stemming
+        //shrinks.add(Filter.Shrink.stopwords); //stopwords
+        //shrinks.add(Filter.Shrink.stemming); // stemming
         String newtext = Filter.displayTokenUsingStopAnalyzer(shrinks, susps);
         File newFile = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/filtered-" + dir + "/"  + currentFile.getName());
         FileUtils.writeStringToFile(newFile, newtext, StandardCharsets.UTF_8);
@@ -135,14 +197,14 @@ public class Main {
 
     //Method for executing Sherlock
     @SuppressWarnings({"finally", "ReturnInsideFinallyBlock"})
-    private static String checkPlagiarismn(File file, final File suspFile){
+    private static String checkPlagiarism(File file, final File suspFile){
         String output = "";
         try {
             String sourceFilePath = file.getAbsolutePath();
             String candidateFilePath = suspFile.getAbsolutePath();
             output = new CommandExecutor("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/sherlock",
                     "-t",
-                    "5","-e", "txt",
+                    "50", "-z", "10","-e", "txt",
                     candidateFilePath,
                     sourceFilePath
 
@@ -153,7 +215,45 @@ public class Main {
             return output;
         }
     }
-
+    private static int diffFiles(final List<String> firstFileContent,
+                                          final List<String> secondFileContent, int i, int diffCounter) throws IOException{
+        final List<String> diff = new ArrayList<>();
+        for (final String line : firstFileContent) {
+            if (!secondFileContent.contains(line)) {
+                diff.add((firstFileContent.indexOf(line) + 1) + " " + line + "\n");
+                diffCounter++;
+            }
+        }
+        String diffRes = String.join("", diff);
+        if (i == 1) {
+            File diff12 = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/diff12.txt");
+            FileUtils.writeStringToFile(diff12, diffRes);
+        }else {
+            File diff21 = new File("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/diff21.txt");
+            FileUtils.writeStringToFile(diff21, diffRes);
+        }
+        return diffCounter;
+    }
+    private static int commonFiles (final List<String> firstFileContent,
+                                             final List<String> secondFileContent) throws IOException{
+        final List<String> comm = new ArrayList<>();
+        int commCounter = 0;
+        for (final String line : firstFileContent){
+            if (secondFileContent.contains(line)){
+                comm.add((firstFileContent.indexOf(line) + 1) + " " + line + "\n");
+                commCounter++;
+            }
+        }
+        String commResults = String.join("", comm);
+        File commons = new File ("/Users/sebastianhuang/IdeaProjects/fingerprintfilter/sherlock-master/commons.txt");
+        FileUtils.writeStringToFile(commons, commResults);
+        return commCounter;
+    }
+    private static long takeTime (long startTime) {
+        long endTime = System.currentTimeMillis();
+        long runtime = endTime - startTime;
+        return runtime;
+    }
 }
 
 
