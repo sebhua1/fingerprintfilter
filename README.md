@@ -6,9 +6,12 @@ Extracts relevant text files and substrings. Filters them and let Sherlock run a
 Classifies Sherlocks results and calculates precision and recall.
 
 How to make the program run:
-Delete the "pairs" file in PANs "01-no-plagiarism" and "02-no-obfuscation" folders
-For Linux: delete ".DS_Store" both folders via terminal
-Insert relevant directories
-Use Sherlock by V.Stange available on git
-Set zerobits and chainlength
-Choose 1 of 3 filters by commenting out the other 2. Unfiltered: comment out all filters
+
+1. Delete the "pairs" file in PANs "01-no-plagiarism" and "02-no-obfuscation" folders
+2. For Linux: delete ".DS_Store" both folders via terminal
+3. Insert relevant directories
+4. Use Sherlock by V.Stange available on git
+5. Set zerobits and chainlength
+6. Choose 1 of 3 filters by commenting out the other 2. Unfiltered: comment out all filters
+
+Run it inside the IDE.
