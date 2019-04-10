@@ -92,8 +92,8 @@ public class Main {
             long fileSizeSubstring = 0;
             long fileSize = 0;
             long shrinkedFileSize = 0;
-            String zerobits = "3";
-            String words = "5";
+            String zerobits = "3";  //Set Zerobits
+            String words = "5";     //Set chainlength
 
             for (PANData panData : PANList){
                 long start = System.currentTimeMillis();
